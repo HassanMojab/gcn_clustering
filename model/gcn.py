@@ -14,13 +14,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import init
 
+if torch.cuda.is_available():
+    device = torch.device('cuda')
+else:
+    device = torch.device('cpu')
 
 class MeanAggregator(nn.Module):
     def __init__(self):
         super(MeanAggregator, self).__init__()
     def forward(self, features, A ):
         x = torch.bmm(A, features)
-        return x 
+        return x
 
 class GraphConv(nn.Module):
     def __init__(self, in_dim, out_dim, agg):
@@ -41,8 +45,8 @@ class GraphConv(nn.Module):
         cat_feats = torch.cat([features, agg_feats], dim=2)
         out = torch.einsum('bnd,df->bnf', (cat_feats, self.weight))
         out = F.relu(out + self.bias)
-        return out 
-        
+        return out
+
 
 class gcn(nn.Module):
     def __init__(self):
@@ -52,19 +56,19 @@ class gcn(nn.Module):
         self.conv2 = GraphConv(512, 512, MeanAggregator)
         self.conv3 = GraphConv(512, 256, MeanAggregator)
         self.conv4 = GraphConv(256, 256,MeanAggregator)
-        
+
         self.classifier = nn.Sequential(
                             nn.Linear(256, 256),
                             nn.PReLU(256),
                             nn.Linear(256, 2))
-    
+
     def forward(self, x, A, one_hop_idcs, train=True):
         # data normalization l2 -> bn
         B,N,D = x.shape
         #xnorm = x.norm(2,2,keepdim=True) + 1e-8
         #xnorm = xnorm.expand_as(x)
         #x = x.div(xnorm)
-        
+
         x = x.view(-1, D)
         x = self.bn0(x)
         x = x.view(B,N,D)
@@ -76,12 +80,12 @@ class gcn(nn.Module):
         x = self.conv4(x,A)
         k1 = one_hop_idcs.size(-1)
         dout = x.size(-1)
-        edge_feat = torch.zeros(B,k1,dout).cuda()
+        edge_feat = torch.zeros(B,k1,dout).to(device)
         for b in range(B):
-            edge_feat[b,:,:] = x[b, one_hop_idcs[b]]  
+            edge_feat[b,:,:] = x[b, one_hop_idcs[b]]
         edge_feat = edge_feat.view(-1,dout)
         pred = self.classifier(edge_feat)
-            
+
         # shape: (B*k1)x2
         return pred
 

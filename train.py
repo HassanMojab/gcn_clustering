@@ -24,49 +24,53 @@ from torch.utils.data import DataLoader
 import model
 from feeder.feeder import Feeder
 from utils import to_numpy
-from utils.logging import Logger 
+from utils.logging import Logger
 from utils.meters import AverageMeter
 from utils.serialization import save_checkpoint
 
 from sklearn.metrics import precision_score, recall_score
 
+if torch.cuda.is_available():
+    device = torch.device('cuda')
+else:
+    device = torch.device('cpu')
 
 def main(args):
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     cudnn.benchmark = True
     sys.stdout = Logger(osp.join(args.logs_dir, 'log.txt'))
-    
-    trainset = Feeder(args.feat_path, 
-                      args.knn_graph_path, 
-                      args.label_path, 
-                      args.seed, 
+
+    trainset = Feeder(args.feat_path,
+                      args.knn_graph_path,
+                      args.label_path,
+                      args.seed,
                       args.k_at_hop,
                       args.active_connection)
     trainloader = DataLoader(
             trainset, batch_size=args.batch_size,
-            num_workers=args.workers, shuffle=True, pin_memory=True) 
+            num_workers=args.workers, shuffle=True, pin_memory=True)
 
-    net = model.gcn().cuda()
-    opt = torch.optim.SGD(net.parameters(), args.lr, 
-                          momentum=args.momentum, 
-                          weight_decay=args.weight_decay) 
+    net = model.gcn().to(device)
+    opt = torch.optim.SGD(net.parameters(), args.lr,
+                          momentum=args.momentum,
+                          weight_decay=args.weight_decay)
 
-    criterion = nn.CrossEntropyLoss().cuda()
+    criterion = nn.CrossEntropyLoss().to(device)
 
     save_checkpoint({
         'state_dict':net.state_dict(),
-        'epoch': 0,}, False, 
+        'epoch': 0,}, False,
         fpath=osp.join(args.logs_dir, 'epoch_{}.ckpt'.format(0)))
     for epoch in range(args.epochs):
         adjust_lr(opt, epoch)
 
         train(trainloader, net, criterion, opt, epoch)
-        save_checkpoint({ 
+        save_checkpoint({
             'state_dict':net.state_dict(),
-            'epoch': epoch+1,}, False, 
+            'epoch': epoch+1,}, False,
             fpath=osp.join(args.logs_dir, 'epoch_{}.ckpt'.format(epoch+1)))
-        
+
 
 def train(loader, net, crit, opt, epoch):
     batch_time = AverageMeter()
@@ -80,22 +84,22 @@ def train(loader, net, crit, opt, epoch):
     end = time.time()
     for i, ((feat, adj, cid, h1id), gtmat) in enumerate(loader):
         data_time.update(time.time() - end)
-        feat, adj, cid, h1id, gtmat = map(lambda x: x.cuda(), 
+        feat, adj, cid, h1id, gtmat = map(lambda x: x.to(device),
                                 (feat, adj, cid, h1id, gtmat))
         pred = net(feat, adj, h1id)
         labels = make_labels(gtmat).long()
         loss = crit(pred, labels)
         p,r, acc = accuracy(pred, labels)
-        
+
         opt.zero_grad()
         loss.backward()
         opt.step()
-        
+
         losses.update(loss.item(),feat.size(0))
         accs.update(acc.item(),feat.size(0))
         precisions.update(p, feat.size(0))
         recalls.update(r,feat.size(0))
-    
+
         batch_time.update(time.time()- end)
         end = time.time()
         if i % args.print_freq == 0:
@@ -107,7 +111,7 @@ def train(loader, net, crit, opt, epoch):
                   'Precison {precisions.val:.3f} ({precisions.avg:.3f})\t'
                   'Recall {recalls.val:.3f} ({recalls.avg:.3f})'.format(
                         epoch, i, len(loader), batch_time=batch_time,
-                        data_time=data_time, losses=losses, accs=accs, 
+                        data_time=data_time, losses=losses, accs=accs,
                         precisions=precisions, recalls=recalls))
 
 
@@ -123,7 +127,7 @@ def adjust_lr(opt, epoch):
         for param_group in opt.param_groups:
             param_group['lr'] = param_group['lr'] * scale
 
-    
+
 
 def accuracy(pred, label):
     pred = torch.argmax(pred, dim=1).long()
@@ -132,13 +136,13 @@ def accuracy(pred, label):
     label = to_numpy(label)
     p = precision_score(label, pred)
     r = recall_score(label, pred)
-    return p,r,acc 
+    return p,r,acc
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # misc
-    working_dir = osp.dirname(osp.abspath(__file__)) 
-    parser.add_argument('--logs-dir', type=str, metavar='PATH', 
+    working_dir = osp.dirname(osp.abspath(__file__))
+    parser.add_argument('--logs-dir', type=str, metavar='PATH',
                         default=osp.join(working_dir, 'logs'))
     parser.add_argument('--seed', default=1, type=int)
     parser.add_argument('--workers', default=16, type=int)
@@ -149,7 +153,7 @@ if __name__ == '__main__':
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--weight_decay', type=float, default=1e-4)
     parser.add_argument('--epochs', type=int, default=4)
-    
+
     # Training args
     parser.add_argument('--batch_size', type=int, default=16)
     parser.add_argument('--feat_path', type=str, metavar='PATH',
