@@ -24,7 +24,7 @@ We also provide the ArcFace features / labels / knn_graphs of IJB-B/CASIA datase
 
 ## Testing
 ```
-python test.py --val_feat_path path/to/features --val_knn_graph_path path/to/knn/graph --val_labels_path path/to/labels --checkpoint path/to/gcn_weights
+python test.py --val_feat_path path/to/features --val_knn_graph_path path/to/knn/graph --val_label_path path/to/labels --checkpoint path/to/gcn_weights
 ```
 During inference, the test script will dynamically output the pairwise precision/recall/accuracy. After each subgraph is processed, the test script will output the final B-Cubed precision/recall/F-score (Note that it is not the same as the pairwise p/r/acc) and NMI score.
 
