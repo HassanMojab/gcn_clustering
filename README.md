@@ -1,4 +1,4 @@
-# Linkage-based Face Clustering via Graph Convolution Network 
+# Linkage-based Face Clustering via Graph Convolution Network
 This repository contains the code for our CVPR'19 paper [Linkage-based Face Clustering via GCN](https://arxiv.org/abs/1903.11306), by Zhongdao Wang, Liang Zheng, Yali Li and Shengjin Wang, Tsinghua University and Australian National University.
 
 ![](https://github.com/Zhongdao/gcn_clustering/blob/master/asset/pipeline.jpg)
@@ -30,7 +30,7 @@ During inference, the test script will dynamically output the pairwise precision
 
 ## Training
 ```
-python train.py --feat_path path/to/features --knn_graph_path path/to/knn/graph --labels_path path/to/labels
+python train.py --feat_path path/to/features --knn_graph_path path/to/knn/graph --label_path path/to/labels
 ```
 We employ the CASIA dataset to train the GCN. Usually, 4 epoch is sufficient. We provide a pre-trained model weights in `logs/logs/best.ckpt`
 
