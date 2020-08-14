@@ -97,7 +97,7 @@ def main(args):
 
     labels, final_pred = single_remove(labels, final_pred)
     print('------------------------------------')
-    print('After removing singleton culsters, number of nodes: ', len(labels))
+    print('After removing singleton clusters, number of nodes: ', len(labels))
     print('Precision   Recall   F-Sore   NMI')
     p,r,f = bcubed(final_pred, labels)
     nmi = normalized_mutual_info_score(final_pred, labels)

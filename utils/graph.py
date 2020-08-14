@@ -112,14 +112,14 @@ def graph_propagation(edges, score, max_sz, step=0.1, beg_th=0.9, pool=None):
             score_dict[e[0], e[1]] = score[i]
     elif pool == 'avg':
         for i,e in enumerate(edges):
-            if score_dict.has_key((e[0],e[1])):
+            if (e[0],e[1]) in score_dict:
                 score_dict[e[0], e[1]] = 0.5*(score_dict[e[0], e[1]] + score[i])
             else:
                 score_dict[e[0], e[1]] = score[i]
 
     elif pool == 'max':
         for i,e in enumerate(edges):
-            if score_dict.has_key((e[0],e[1])):
+            if (e[0],e[1]) in score_dict:
                 score_dict[e[0], e[1]] = max(score_dict[e[0], e[1]] , score[i])
             else:
                 score_dict[e[0], e[1]] = score[i]
