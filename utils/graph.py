@@ -37,7 +37,7 @@ def connected_components(nodes, score_dict, th):
             if th is not None:
                 neighbors = {l for l in n.links if score_dict[tuple(sorted([n.name, l.name]))] >= th}
             else:
-		neighbors = n.links
+                neighbors = n.links
             neighbors.difference_update(group)
             nodes.difference_update(neighbors)
             group.update(neighbors)
@@ -81,7 +81,7 @@ def connected_components_constraint(nodes, max_sz, score_dict=None, th=None):
 def graph_propagation_naive(edges, score, th):
 
     edges = np.sort(edges, axis=1)
-    
+
     # construct graph
     score_dict = {} # score lookup table
     for i,e in enumerate(edges):
@@ -188,7 +188,7 @@ def diffusion(vertex, label, score_dict, max_depth=5, weight_decay=0.6, normaliz
             self.node = node
             self.depth = depth
             self.value = value
-            
+
     label_fusion = {}
     for name in label.keys():
         label_fusion[name] = {label[name]: 1.0}

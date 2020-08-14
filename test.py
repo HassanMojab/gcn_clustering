@@ -150,13 +150,13 @@ def validate(loader, net, crit):
                   'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                   'Loss {losses.val:.3f} ({losses.avg:.3f})\n'
                   'Accuracy {accs.val:.3f} ({accs.avg:.3f})\t'
-                  'Precison {precisions.val:.3f} ({precisions.avg:.3f})\t'
+                  'Precision {precisions.val:.3f} ({precisions.avg:.3f})\t'
                   'Recall {recalls.val:.3f} ({recalls.avg:.3f})'.format(
                         i, len(loader), batch_time=batch_time,
                         data_time=data_time, losses=losses, accs=accs,
                         precisions=precisions, recalls=recalls))
 
-	node_list = node_list.long().squeeze().numpy()
+        node_list = node_list.long().squeeze().numpy()
         bs = feat.size(0)
         for b in range(bs):
             cidb = cid[b].int().item()
@@ -164,7 +164,7 @@ def validate(loader, net, crit):
 
             for j,n in enumerate(h1id[b]):
                 n = n.item()
-	        edges.append([nl[cidb], nl[n]])
+                edges.append([nl[cidb], nl[n]])
                 scores.append(pred[b*args.k_at_hop[0]+j,1].item())
     edges = np.asarray(edges)
     scores = np.asarray(scores)

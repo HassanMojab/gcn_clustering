@@ -108,7 +108,7 @@ def train(loader, net, crit, opt, epoch):
                   'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                   'Loss {losses.val:.3f} ({losses.avg:.3f})\t'
                   'Accuracy {accs.val:.3f} ({accs.avg:.3f})\t'
-                  'Precison {precisions.val:.3f} ({precisions.avg:.3f})\t'
+                  'Precision {precisions.val:.3f} ({precisions.avg:.3f})\t'
                   'Recall {recalls.val:.3f} ({recalls.avg:.3f})'.format(
                         epoch, i, len(loader), batch_time=batch_time,
                         data_time=data_time, losses=losses, accs=accs,
